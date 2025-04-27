@@ -116,20 +116,11 @@
     </div>
     <div id="celebration">❤️🌸🎈 I Love You! 🎈🌸❤️</div>
 
-    <!-- Hidden audio player -->
-    <audio id="loveMusic" preload="auto">
-        <source src="https://cdn.pixabay.com/download/audio/2022/02/23/audio_a3e4fa254e.mp3?filename=romantic-piano-112198.mp3" type="audio/mpeg">
-        Your browser does not support the audio element.
-    </audio>
-
     <script>
         let askedAgain = false;
         let backgroundInterval;
 
         function handleYes() {
-            // Start music
-            playMusic();
-
             // Show background dense floaters immediately
             startDenseBackground();
             document.getElementById("question").innerText = "❤️🌸🎈 I Love You! 🎈🌸❤️";
@@ -141,7 +132,7 @@
                 if (!askedAgain) {
                     getLocation();
                 }
-            }, 5000); // 5 seconds delay to enjoy floating animation
+            }, 3000); // 3 seconds delay to enjoy floating animation
         }
 
         function getLocation() {
@@ -214,11 +205,6 @@
                     createFloater(symbols);
                 }
             }, 200); // faster rate
-        }
-
-        function playMusic() {
-            const music = document.getElementById('loveMusic');
-            music.play();
         }
 
         // Start soft background at first
